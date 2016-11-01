@@ -128,13 +128,16 @@ def load_next_test_data(fileName, stride):
 		if (ret == 0):
 			break
 		frm_cnt = frm_cnt + 1
-		# take every nth frame
+        # take every nth frame
 		if (frm_cnt%stride != 0):
 			continue		
 		# convert to gray
 		gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		# sub-sample for performance
+
+		# TODO: add function parameter to control the subsampling...
 		gray_frame = gray_frame[::3,::3]
+
 		# append to group
 		framesList.append(gray_frame)
 		if (len(framesList)>20):
