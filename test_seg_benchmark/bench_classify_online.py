@@ -4,6 +4,7 @@ Ofir Levy, Lior Wolf
 Tel Aviv University
 '''
 import os
+import re
 import numpy as np
 import cv2
 import glob
@@ -197,32 +198,35 @@ def test_benchmark_online(classify, test_set_x, batch_size):
 
     strides = (2,5,8)
 
-    #dataset_root = "../VideoCountingDataset/LevyWolf/"
-    #vid_root = os.path.join(dataset_root, "YT_seg")
-    #ann_root = os.path.join(dataset_root, "annotations")
-
-    dataset_root = "../VideoCountingDataset/UCF-101/"
+    data_subset = "QUVACount-100"
+    dataset_root = "../VideoCountingDataset/%s/" % data_subset
     vid_root = os.path.join(dataset_root, "video")
-    vid_files = glob.glob(os.path.join(vid_root, "*.avi"))
-
     ann_root = os.path.join(dataset_root, "annotations")
 
-    cnt_gts_original = pickle.load(open("vidGtData.p", "rb"))
+    vid_files = glob.glob(os.path.join(vid_root, "*.avi"))
+
+    cnt_gts_raw = pickle.load(open("vidGtData.p", "rb"))
+    cnt_gts_original = np.zeros(100, dtype=np.int)
     cnt_gts_revised  = np.zeros(100, dtype=np.int)
     cnt_pred = np.zeros(100, dtype=np.int)
 
 
-
     for video_idx in range(100):
 
-        #vid_file = os.path.join(vid_root, "YT_seg_%i.avi" % video_idx)
         vid_file = vid_files[video_idx]
+
+        if data_subset == "YTsegments":
+            matches = map(int, re.findall(r'\d+', vid_file))
+            video_idx_from_filename = matches[-1]
+            cnt_gts_original[video_idx] = cnt_gts_raw[video_idx_from_filename]
 
         vid_file_base, _ = os.path.splitext(os.path.basename(vid_file))
         ann_file = os.path.join(ann_root, "%s.npy" % vid_file_base)
         annotations = np.load(ann_file)
 
-        print("VIDEO: YT_SEG_%i" % video_idx)
+        cnt_gts_revised[video_idx] = len(annotations)
+
+        print("VIDEO: %s" % vid_file_base)
         print("  video_file = %s" % vid_file)
         print("  ann_file   = %s" % ann_file)
 
@@ -254,10 +258,12 @@ def test_benchmark_online(classify, test_set_x, batch_size):
         global_count = get_remain_count(classify, test_set_x, data, valid, global_count, curr_residue, 200+(40*numofiterations))
         cnt_pred[video_idx] = global_count
 
-
-    print("RESULTS ORIGINAL ANNOTATIONS")
-    print_evaluation_summary(cnt_pred, cnt_gts_original)
+    if data_subset == "YTSegments":
+        print("RESULTS ORIGINAL ANNOTATIONS")
+        print_evaluation_summary(cnt_pred, cnt_gts_original)
+        print_evaluation_summary_latex(cnt_pred, cnt_gts_original)
 
     # We now compute the evaluation metrics using cnt_pred and cnt_gts
     print("RESULTS REVISED OUR ANNOTATIONS")
     print_evaluation_summary(cnt_pred, cnt_gts_revised)
+    print_evaluation_summary_latex(cnt_pred, cnt_gts_revised)

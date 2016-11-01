@@ -4,6 +4,7 @@ Ofir Levy, Lior Wolf
 Tel Aviv University
 '''
 import os
+import re
 import numpy as np
 import glob
 import cv2
@@ -17,15 +18,15 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
 
     strides = (2,5,8)
 
-    dataset_root = "../VideoCountingDataset/LevyWolf/"
-    vid_root = os.path.join(dataset_root, "YT_seg")
+    data_subset = "QUVACount-100"
+    dataset_root = "../VideoCountingDataset/%s/" % data_subset
+    vid_root = os.path.join(dataset_root, "video")
     ann_root = os.path.join(dataset_root, "annotations")
 
-    #dataset_root = "../VideoCountingDataset/UCF-101/"
-    #vid_root = os.path.join(dataset_root, "video")
-    #vid_files = glob.glob(os.path.join(vid_root, "*.avi"))
+    vid_files = glob.glob(os.path.join(vid_root, "*.avi"))
 
-    cnt_gts_original = pickle.load(open("vidGtData.p", "rb"))
+    cnt_gts_raw = pickle.load(open("vidGtData.p", "rb"))
+    cnt_gts_original = np.zeros(100, dtype=np.int)
     cnt_gts_revised  = np.zeros(100, dtype=np.int)
     cnt_pred = np.zeros(100, dtype=np.int)
 
@@ -37,8 +38,12 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
     for stride_idx, stride in enumerate(strides):
         for video_idx in range(num_videos):
 
-            vid_file = os.path.join(vid_root, "YT_seg_%i.avi" % video_idx)
-            #vid_file = vid_files[video_idx]
+            vid_file = vid_files[video_idx]
+
+            if data_subset == "YTsegments":
+                matches = map(int, re.findall(r'\d+', vid_file))
+                video_idx_from_filename = matches[-1]
+                cnt_gts_original[video_idx] = cnt_gts_raw[video_idx_from_filename]
 
             vid_file_base, _ = os.path.splitext(os.path.basename(vid_file))
             ann_file = os.path.join(ann_root, "%s.npy" % vid_file_base)
@@ -50,7 +55,8 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
             print("  stride      = %i" % stride)
             print("  video_file  = %s" % vid_file)
             print("  ann_file    = %s" % ann_file)
-            print("  gt original = %i" % cnt_gts_original[video_idx])
+            if data_subset == "YTSegments":
+                print("  gt original = %i" % cnt_gts_original[video_idx])
             print("  gt revised  = %i" % cnt_gts_revised[video_idx])
 
             mydatasets = load_next_test_data(vid_file, stride)
@@ -93,20 +99,22 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
             entropy[video_idx, stride_idx] = curr_entropy
             num_entropy[video_idx, stride_idx] = ent_cnt
 
-
-    print("BEST STRIDE (original annotations):")
-    absdiff_o = abs(countArr-np.expand_dims(cnt_gts_original[0:num_videos], -1))
-    best_strides = np.argmin(absdiff_o, axis=1)
-    cnt_pred_best_stride = countArr[np.arange(len(countArr)),best_strides]
-    print(cnt_pred_best_stride.shape)
-    print_evaluation_summary(cnt_pred_best_stride, cnt_gts_original[0:num_videos])
-    print("#"*60)
+    if data_subset == "YTSegments":
+        print("BEST STRIDE (original annotations):")
+        absdiff_o = abs(countArr-np.expand_dims(cnt_gts_original[0:num_videos], -1))
+        best_strides = np.argmin(absdiff_o, axis=1)
+        cnt_pred_best_stride = countArr[np.arange(len(countArr)),best_strides]
+        print(cnt_pred_best_stride.shape)
+        print_evaluation_summary(cnt_pred_best_stride, cnt_gts_original[0:num_videos])
+        print_evaluation_summary_latex(cnt_pred_best_stride, cnt_gts_original[0:num_videos])
+        print("#"*60)
 
     print("BEST STRIDE (revised annotations):")
     absdiff_o = abs(countArr-np.expand_dims(cnt_gts_revised[0:num_videos], -1))
     best_strides = np.argmin(absdiff_o, axis=1)
     cnt_pred_best_stride = countArr[np.arange(len(countArr)),best_strides]
     print_evaluation_summary(cnt_pred_best_stride, cnt_gts_revised[0:num_videos])
+    print_evaluation_summary_latex(cnt_pred_best_stride, cnt_gts_revised[0:num_videos])
     print("#"*60)
 
     #min_err_cnt_o = absdiff_o.min(axis=1)
@@ -117,12 +125,15 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
     # Compute the median count for the strides
     cnt_pred_median = np.median(countArr,axis=1)
 
-    print("MEDIAN STRIDE (original annotations):")
-    print_evaluation_summary(cnt_pred_median, cnt_gts_original[0:num_videos])
-    print("#"*60)
+    if data_subset == "YTSegments":
+        print("MEDIAN STRIDE (original annotations):")
+        print_evaluation_summary(cnt_pred_median, cnt_gts_original[0:num_videos])
+        print_evaluation_summary_latex(cnt_pred_median, cnt_gts_original[0:num_videos])
+        print("#"*60)
 
     print("MEDIAN STRIDE (revised annotations):")
     print_evaluation_summary(cnt_pred_median, cnt_gts_revised[0:num_videos])
+    print_evaluation_summary_latex(cnt_pred_median, cnt_gts_revised[0:num_videos])
     print("#"*60)
 
     # TODO: choose based on lowest entropy
@@ -134,10 +145,13 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
     flt = countArr.flatten()
     cnt_pred_entropy = flt[m]
 
-    print("ENTROPY STRIDE (original annotations):")
-    print_evaluation_summary(cnt_pred_entropy, cnt_gts_original[0:num_videos])
-    print("#"*60)
+    if data_subset == "YTSegments":
+        print("ENTROPY STRIDE (original annotations):")
+        print_evaluation_summary(cnt_pred_entropy, cnt_gts_original[0:num_videos])
+        print_evaluation_summary_latex(cnt_pred_entropy, cnt_gts_original[0:num_videos])
+        print("#"*60)
 
     print("ENTROPY STRIDE (revised annotations):")
     print_evaluation_summary(cnt_pred_entropy, cnt_gts_revised[0:num_videos])
+    print_evaluation_summary_latex(cnt_pred_entropy, cnt_gts_revised[0:num_videos])
     print("#"*60)
