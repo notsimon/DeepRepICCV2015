@@ -3,11 +3,13 @@ live repetition counting system
 Ofir Levy, Lior Wolf
 Tel Aviv University
 '''
+
 import os
 import re
 import numpy as np
 import glob
 import cv2
+import h5py
 import pickle
 from common import *
 
@@ -20,10 +22,12 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
 
     data_subset = "YTSegments"  #QUVACount-100"
     dataset_root = "../VideoCountingDataset/%s/" % data_subset
-    vid_root = os.path.join(dataset_root, "video_slowdown/set1")
+    #vid_root = os.path.join(dataset_root, "video_slowdown/set1")
+    vid_root = os.path.join(dataset_root, "video")
     ann_root = os.path.join(dataset_root, "annotations")
 
     vid_files = glob.glob(os.path.join(vid_root, "*.avi"))
+    vid_files.sort()
 
     cnt_gts_raw = pickle.load(open("vidGtData.p", "rb"))
     cnt_gts_original = np.zeros(100, dtype=np.int)
@@ -36,17 +40,14 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
     num_entropy = np.zeros(shape=(num_videos, len(strides)))
 
     for stride_idx, stride in enumerate(strides):
-        for video_idx in range(num_videos):
 
-            vid_file = vid_files[video_idx]
+        for video_idx in range(0, num_videos):
 
-            if data_subset == "YTsegments":
-                matches = map(int, re.findall(r'\d+', vid_file))
-                video_idx_from_filename = matches[-1]
-                cnt_gts_original[video_idx] = cnt_gts_raw[video_idx_from_filename]
+            if data_subset == "YTSegments":
+                cnt_gts_original[video_idx] = cnt_gts_raw[video_idx]
 
-            vid_file_base, _ = os.path.splitext(os.path.basename(vid_file))
-            ann_file = os.path.join(ann_root, "%s.npy" % vid_file_base)
+            vid_file = os.path.join(vid_root, "YT_seg_%i.avi" % video_idx)
+            ann_file = os.path.join(ann_root, "YT_seg_%i.npy" % video_idx)
             annotations = np.load(ann_file)
 
             cnt_gts_revised[video_idx] = len(annotations)
@@ -149,11 +150,27 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
         print("ENTROPY STRIDE (original annotations):")
         print_evaluation_summary(cnt_pred_entropy, cnt_gts_original[0:num_videos])
         print_evaluation_summary_latex(cnt_pred_entropy, cnt_gts_original[0:num_videos])
-        diff = cnt_pred_entropy - cnt_gts_original[0:num_videos]
-        np.save("./count_differences_entropy.npy", diff)
+        diff_entropy_orig = cnt_pred_entropy - cnt_gts_original[0:num_videos]
+        #np.save("./count_differences_entropy_original.npy", diff_entropy_orig)
         print("#"*60)
 
     print("ENTROPY STRIDE (revised annotations):")
     print_evaluation_summary(cnt_pred_entropy, cnt_gts_revised[0:num_videos])
     print_evaluation_summary_latex(cnt_pred_entropy, cnt_gts_revised[0:num_videos])
+    diff_entropy_revised = cnt_pred_entropy - cnt_gts_revised[0:num_videos]
+    #np.save("./count_differences_entropy_revised.npy", diff_entropy_revised)
     print("#"*60)
+
+    with h5py.File("/home/trunia1/Dropbox/PhD Research/tmp/count_results.h5", 'w') as hf:
+        hf.create_dataset("gt_original", data=cnt_gts_original[0:num_videos])
+        hf.create_dataset("gt_revised",  data=cnt_gts_revised[0:num_videos])
+        hf.create_dataset("counts_all_strides", data=countArr)
+        hf.create_dataset("counts_oracle", data=cnt_pred_best_stride)
+        hf.create_dataset("counts_median", data=cnt_pred_median)
+        hf.create_dataset("counts_entropy", data=cnt_pred_entropy)
+        hf.create_dataset("diff_entropy_original", data=diff_entropy_orig)
+        hf.create_dataset("diff_entropy_revised", data=diff_entropy_revised)
+        hf.create_dataset("entropy", data=entropy)
+        hf.create_dataset("num_entropy", data=num_entropy)
+
+
