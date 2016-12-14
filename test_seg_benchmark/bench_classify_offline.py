@@ -18,9 +18,9 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
 
     strides = (2,5,8)
 
-    data_subset = "QUVACount-100"
+    data_subset = "YTSegments"  #QUVACount-100"
     dataset_root = "../VideoCountingDataset/%s/" % data_subset
-    vid_root = os.path.join(dataset_root, "video")
+    vid_root = os.path.join(dataset_root, "video_slowdown/set1")
     ann_root = os.path.join(dataset_root, "annotations")
 
     vid_files = glob.glob(os.path.join(vid_root, "*.avi"))
@@ -149,6 +149,8 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
         print("ENTROPY STRIDE (original annotations):")
         print_evaluation_summary(cnt_pred_entropy, cnt_gts_original[0:num_videos])
         print_evaluation_summary_latex(cnt_pred_entropy, cnt_gts_original[0:num_videos])
+        diff = cnt_pred_entropy - cnt_gts_original[0:num_videos]
+        np.save("./count_differences_entropy.npy", diff)
         print("#"*60)
 
     print("ENTROPY STRIDE (revised annotations):")

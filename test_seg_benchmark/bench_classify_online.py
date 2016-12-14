@@ -198,9 +198,10 @@ def test_benchmark_online(classify, test_set_x, batch_size):
 
     strides = (2,5,8)
 
-    data_subset = "QUVACount-100"
+    data_subset = "QUVACount-100" # YTSegments or QUVACount-100
     dataset_root = "../VideoCountingDataset/%s/" % data_subset
-    vid_root = os.path.join(dataset_root, "video")
+    vid_root = os.path.join(dataset_root, "video_slowdown/set3")
+    #vid_root = os.path.join(dataset_root, "video")
     ann_root = os.path.join(dataset_root, "annotations")
 
     vid_files = glob.glob(os.path.join(vid_root, "*.avi"))
