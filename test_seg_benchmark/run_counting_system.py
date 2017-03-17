@@ -10,6 +10,7 @@ from layers import LogisticRegression, HiddenLayer, LeNetConvPoolLayer
 from common import load_initial_test_data
 from bench_classify_online import test_benchmark_online
 from bench_classify_offline import test_benchmark_offline
+from run_online_save_entropy import analyze_online_counting
 
     
 #---------------------------------------------------------------------------#
@@ -119,6 +120,9 @@ def count_movie():
     elif (sys.argv[1] == "--offline"):
         print 'offline entropy counting start'
         test_benchmark_offline(classify, test_set_x, batchsize)
+    elif (sys.argv[1] == "--online_analysis"):
+        print 'online analyzing count entropies'
+        analyze_online_counting(classify, test_set_x, batchsize)
     else:
         print 'invalid arguments. Add --online for online entropy counting, --offline for offline entropy counting'
         sys.exit()

@@ -11,7 +11,9 @@ import glob
 import pickle
 from common import *
 
-from bluevelvet.utils.evaluation import *
+import bluevelvet.utils
+print(bluevelvet.__file__)
+#import bluevelvet.utils.evaluation as evaluation
 
 
 def get_inter_num(data, valid):
