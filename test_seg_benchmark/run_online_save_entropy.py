@@ -252,6 +252,7 @@ def analyze_online_counting(classify, test_set_x, batch_size):
 
     data_subset = "YTSegments"
     dataset_root = "/home/trunia1/data/VideoCountingDataset/{}/".format(data_subset)
+    entropy_plot_dir = os.path.join(dataset_root, "20170317_entropy_plots")
 
     # Path containing avi files
     vid_root = os.path.join(dataset_root, "video")
@@ -299,6 +300,17 @@ def analyze_online_counting(classify, test_set_x, batch_size):
         # Save all entropies
         entropies = []
         winner_strides = []
+        avg_entropies = []
+
+        def compute_avg_entropies(ent_all):
+            ent_all_np = np.asarray(ent_all)
+            avg_ent = np.zeros(3, np.float32)
+            for i in range(3):
+                if ent_all_np[i] is None:
+                    avg_ent[i] = 0
+                else:
+                    avg_ent[i] = np.mean(ent_all_np[i])
+            return avg_ent
 
         if data[0].shape[0] < 81:
             # Workaround for short movies
@@ -306,6 +318,7 @@ def analyze_online_counting(classify, test_set_x, batch_size):
             cnt_pred[video_idx] = global_count
             entropies.append(entropies_current)
             winner_strides.append(strides[win_stride_cur])
+            avg_entropies.append(compute_avg_entropies(entropies_current))
         else:
             # Longer movies
             # get initial counting. all 3 stride for 200 frames.
@@ -314,6 +327,7 @@ def analyze_online_counting(classify, test_set_x, batch_size):
 
             entropies.append(entropies_current)
             winner_strides.append(strides[win_stride_cur])
+            avg_entropies.append(compute_avg_entropies(entropies_current))
 
             # Get the last multiple of 40 global frame
             numofiterations = get_inter_num(data,valid)
@@ -323,10 +337,11 @@ def analyze_online_counting(classify, test_set_x, batch_size):
                 # i.e. st8 runs 5 times. st5 8 times and st2 20 times.
                 global_count, curr_residue, entropies_current, win_stride_cur = get_next_count(classify, test_set_x, data, valid, global_count, curr_residue, start_frame)
                 winner_strides.append(strides[win_stride_cur])
+                avg_entropies.append(compute_avg_entropies(entropies_current))
 
-                print("Entropies, Start Frame = {}".format(start_frame))
-                for j in range(3):
-                    print("  Stride {}. Num Entropies: {}. Entropies: {}".format(strides[j], len(entropies_current[j]), str(entropies_current[j])))
+                #print("Entropies, Start Frame = {}".format(start_frame))
+                #for j in range(3):
+                #    print("  Stride {}. Num Entropies: {}. Entropies: {}".format(strides[j], len(entropies_current[j]), str(entropies_current[j])))
 
             # for frames that left get from each
             final_offset = 200+(40*numofiterations)
@@ -336,30 +351,68 @@ def analyze_online_counting(classify, test_set_x, batch_size):
 
             cnt_pred[video_idx] = global_count
 
-        f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
-        ax = [ax1, ax2, ax3, ax4]
+        ########################################################################
+        ########################################################################
+        ########################################################################
 
-        # Plot the entropies
+        # CODE FOR PLOTTING MEAN ENTROPIES
+        f, ax = plt.subplots(ncols=2, nrows=1, figsize=(8,4))
+
+        avg_entropies_np = np.asarray(avg_entropies)
+
         for j in range(3):
+            ax[0].plot(avg_entropies_np[:,j], label="Stride {}".format(strides[j]))
+            ax[0].set_xlabel("Synchronization Time")
+            ax[0].set_ylabel("Entropy")
 
-            entropies_stride = np.empty(0)
-            for k in range(len(entropies)):
-                entropies_stride = np.append(entropies_stride, entropies[k][j])
-
-            ax[j].plot(entropies_stride, label="Stride {}".format(strides[j]), c=colors[j])
-            ax[j].set_title("Stride {}".format(strides[j]))
-            ax[j].set_xlabel("Block Index")
-            ax[j].set_ylabel("Entropy")
+        ax[0].set_title("Average Entropies")
+        ax[0].set_xlim([0, len(avg_entropies_np)])
+        legend = ax[0].legend()
 
         np_winners = np.asarray(winner_strides)
-        ax[3].plot(np_winners)
-        ax[3].set_xlabel("Sync Time")
-        ax[3].set_ylabel("Winner Stride")
+        ax[1].plot(np_winners)
+        ax[1].set_title("Most Probable Stride (Lowest Entropy)")
+        ax[1].set_xlabel("Synchronization Time")
+        ax[1].set_ylabel("Winner Stride")
+        ax[1].set_xlim([0, len(avg_entropies_np)])
+        ax[1].set_yticks([2,5,8])
+        ax[1].set_ylim([0, 10])
+
+        plt.suptitle("Average Entropy (YT_Seg_{})".format(video_idx))
 
         plt.tight_layout()
+        plt.subplots_adjust(top=0.85)
+        #plt.show()
+        plot_out = os.path.join(entropy_plot_dir, "YT_Seg_{}.pdf".format(video_idx))
+        plt.savefig(plot_out)
+        plt.close()
 
-        #plt.suptitle("Entropies (YT_Seg_{})".format(video_idx))
-        plt.show()
+
+        # CODE FOR PLOTTING ALL ENTROPIES
+        # f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+        # ax = [ax1, ax2, ax3, ax4]
+        #
+        # # Plot the entropies
+        # for j in range(3):
+        #
+        #     entropies_stride = np.empty(0)
+        #     for k in range(len(entropies)):
+        #         entropies_stride = np.append(entropies_stride, entropies[k][j])
+        #
+        #     ax[j].plot(entropies_stride, label="Stride {}".format(strides[j]), c=colors[j])
+        #     ax[j].set_title("Stride {}".format(strides[j]))
+        #     ax[j].set_xlabel("Block Index")
+        #     ax[j].set_ylabel("Entropy")
+        #
+        # np_winners = np.asarray(winner_strides)
+        # ax[3].plot(np_winners)
+        # ax[3].set_xlabel("Sync Time")
+        # ax[3].set_ylabel("Winner Stride")
+        #
+        # plt.tight_layout()
+        #
+        # #plt.suptitle("Entropies (YT_Seg_{})".format(video_idx))
+        # plt.show()
 
 
     if data_subset == "YTSegments":
