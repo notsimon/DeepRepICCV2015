@@ -11,9 +11,8 @@ import glob
 import pickle
 from common import *
 
-import bluevelvet.utils
-print(bluevelvet.__file__)
-#import bluevelvet.utils.evaluation as evaluation
+
+import cortex.count.experiments
 
 
 def get_inter_num(data, valid):
@@ -200,48 +199,30 @@ def test_benchmark_online(classify, test_set_x, batch_size):
 
     strides = (2,5,8)
 
-    data_subset = "QUVACount-100" # YTSegments or QUVACount-100
-    dataset_root = "../VideoCountingDataset/%s/" % data_subset
-    vid_root = os.path.join(dataset_root, "video_slowdown/set3")
-    #vid_root = os.path.join(dataset_root, "video")
-    ann_root = os.path.join(dataset_root, "annotations")
+    num_videos_to_evaluate = 3
 
+    vid_root = "/home/trunia1/data/VideoCountingDatasetClean/LevyWolf_Segment/videos"
     vid_files = glob.glob(os.path.join(vid_root, "*.avi"))
+    vid_files.sort()
 
-    cnt_gts_raw = pickle.load(open("vidGtData.p", "rb"))
-    cnt_gts_original = np.zeros(100, dtype=np.int)
-    cnt_gts_revised  = np.zeros(100, dtype=np.int)
-    cnt_pred = np.zeros(100, dtype=np.int)
+    annotation_file = "/home/trunia1/data/VideoCountingDatasetClean/LevyWolf_Segment/vidGtData.p"
+    cnt_annotations = pickle.load(open(annotation_file, 'rb'))
+    cnt_annotations = np.ravel(cnt_annotations)[0:num_videos_to_evaluate]
+    cnt_predictions = np.zeros(num_videos_to_evaluate, np.int32)
 
 
-    for video_idx in range(100):
+    for video_idx in range(num_videos_to_evaluate):
 
         vid_file = vid_files[video_idx]
-
-        if data_subset == "YTsegments":
-            matches = map(int, re.findall(r'\d+', vid_file))
-            video_idx_from_filename = matches[-1]
-            cnt_gts_original[video_idx] = cnt_gts_raw[video_idx_from_filename]
-
         vid_file_base, _ = os.path.splitext(os.path.basename(vid_file))
-        ann_file = os.path.join(ann_root, "%s.npy" % vid_file_base)
-        annotations = np.load(ann_file)
 
-        cnt_gts_revised[video_idx] = len(annotations)
-
-        print("VIDEO: %s" % vid_file_base)
-        print("  video_file = %s" % vid_file)
-        print("  ann_file   = %s" % ann_file)
-
-        # Ground Truth count is number of count annotation locations
-        cnt_gts_revised[video_idx] = len(annotations)
-        print("  gt original = %i" % cnt_gts_original[video_idx])
-        print("  gt revised  = %i" % cnt_gts_revised[video_idx])
+        print("Video Index = {}".format(video_idx))
+        print("Video File  = {}".format(vid_files[video_idx]))
 
         # load all 3 stride for this movie
         (data, valid) = load_movie_data(vid_file)
         #workaround for short movies
-        if (data[0].shape[0]<81):
+        if data[0].shape[0] < 81:
             global_count = count_entire_movie(classify, test_set_x, data, valid, 0, (0,0,0), 0)
             cnt_pred[video_idx] = global_count
             continue
@@ -259,14 +240,12 @@ def test_benchmark_online(classify, test_set_x, batch_size):
 
         # for frames that left get from each
         global_count = get_remain_count(classify, test_set_x, data, valid, global_count, curr_residue, 200+(40*numofiterations))
-        cnt_pred[video_idx] = global_count
+        cnt_predictions[video_idx] = global_count
 
-    if data_subset == "YTSegments":
-        print("RESULTS ORIGINAL ANNOTATIONS")
-        print_evaluation_summary(cnt_pred, cnt_gts_original)
-        print_evaluation_summary_latex(cnt_pred, cnt_gts_original)
+        print("True Count  = {}".format(cnt_annotations))
+        print("Pred Count  = {}".format(cnt_predictions[video_idx]))
+
 
     # We now compute the evaluation metrics using cnt_pred and cnt_gts
-    print("RESULTS REVISED OUR ANNOTATIONS")
-    print_evaluation_summary(cnt_pred, cnt_gts_revised)
-    print_evaluation_summary_latex(cnt_pred, cnt_gts_revised)
+    results_out = "/home/trunia1/data/VideoCountingDatasetClean/LevyWolf_Segment/results/levy_wolf_method/"
+    cortex.count.experiments.write_experiment(cnt_predictions, cnt_annotations, results_out, True)

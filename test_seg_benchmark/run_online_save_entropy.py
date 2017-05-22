@@ -250,19 +250,16 @@ def analyze_online_counting(classify, test_set_x, batch_size):
     strides = (2,5,8)
     search_bounding_box = False
 
-    data_subset = "YTSegments"
-    dataset_root = "/home/trunia1/data/VideoCountingDataset/{}/".format(data_subset)
-    entropy_plot_dir = os.path.join(dataset_root, "20170317_entropy_plots")
+    dataset_root = "/home/trunia1/data/VideoCountingDatasetClean/LevyWolf_Segment/videos/"
 
     # Path containing avi files
     vid_root = os.path.join(dataset_root, "video")
+    vid_files = glob.glob(os.path.join(vid_root, "*.avi"))
+    vid_files.sort()
 
     # Wolf' and Our annotations
     wolf_ann_file = os.path.join(dataset_root, "vidGtData.p")
     our_ann_root  = os.path.join(dataset_root, "annotations/cycle_annotations")
-
-    vid_files = glob.glob(os.path.join(vid_root, "*.avi"))
-    vid_files.sort()
 
     cnt_gts_raw = pickle.load(open(wolf_ann_file, "rb"))
     cnt_gts_original = np.zeros(100, dtype=np.int)

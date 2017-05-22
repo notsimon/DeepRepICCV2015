@@ -107,25 +107,24 @@ def count_movie():
     layer3.__setstate__(loaded_objects[3])
     layer4.__setstate__(loaded_objects[4])
     
-    # ----------------------------------------------------
+    ############################################################################
+    ############################################################################
+    ############################################################################
     
     startc = time.clock()
-    
-    if (len(sys.argv) != 2):
-        print 'invalid arguments. Add --online for online entropy counting, --offline for offline entropy counting'
-        sys.exit()
-    if (sys.argv[1] == "--online"):
-        print 'online entropy counting start'
-        test_benchmark_online(classify, test_set_x, batchsize)
-    elif (sys.argv[1] == "--offline"):
-        print 'offline entropy counting start'
-        test_benchmark_offline(classify, test_set_x, batchsize)
-    elif (sys.argv[1] == "--online_analysis"):
-        print 'online analyzing count entropies'
-        analyze_online_counting(classify, test_set_x, batchsize)
-    else:
-        print 'invalid arguments. Add --online for online entropy counting, --offline for offline entropy counting'
-        sys.exit()
+
+    print 'online entropy counting start'
+    test_benchmark_online(classify, test_set_x, batchsize)
+
+    #print 'offline entropy counting start'
+    #test_benchmark_offline(classify, test_set_x, batchsize)
+
+    #print 'online analyzing count entropies'
+    #analyze_online_counting(classify, test_set_x, batchsize)
+
+    ############################################################################
+    ############################################################################
+    ############################################################################
        
     endc = time.clock()
     

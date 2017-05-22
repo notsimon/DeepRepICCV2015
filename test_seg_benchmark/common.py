@@ -165,14 +165,14 @@ def load_next_test_data(fileName, stride, search_bounding_box=True):
         framesList.append(gray_frame)
 
         if len(framesList)>20:
-            
+
             # Remove the first frame
             framesList.pop(0)
-            
+
             # List of 20 frames for processing
             framesArr = np.array(framesList)
             frames = None
-            
+
             if search_bounding_box:
                 frames = get_boundingbox(framesArr)
                 frames = frames.astype(np.float32)
