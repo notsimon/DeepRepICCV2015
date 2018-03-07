@@ -13,7 +13,7 @@ function cData_run
     totalnTrainSamples = 30000;
     split_size = 50;    
    
-    for i=1:(totalnTrainSamples/split_size) % use parfor if you have parallel toolbox
+    parfor i=1:(totalnTrainSamples/split_size) % use parfor if you have parallel toolbox
         [all_cFrames,labels,motion_types] = create_cData(split_size,getrandparamsfunc);
         filename = fullfile(outdir,strcat('rep_train_data_', num2str(i)));
         mysave(filename, all_cFrames, labels,motion_types);
@@ -22,7 +22,7 @@ function cData_run
  
     
     nValidSamples = 5000;
-    for i=1:(nValidSamples/split_size) % use parfor if you have parallel toolbox
+    parfor i=1:(nValidSamples/split_size) % use parfor if you have parallel toolbox
         [all_cFrames,labels,motion_types] = create_cData(split_size,getrandparamsfunc);
         filename = fullfile(outdir,strcat('rep_valid_data_', num2str(i)));
         mysave(filename, all_cFrames, labels,motion_types);

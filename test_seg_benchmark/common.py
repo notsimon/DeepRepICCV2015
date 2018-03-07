@@ -188,7 +188,7 @@ def load_next_test_data_segmentation(fileName, segmentation_path, stride):
     seg_masks = fast_seg.load_segmentations(fileName, segmentation_path)
     seg_boxes = fast_seg.segmentations_to_boxes(seg_masks)
 
-    masks_correct = np.loadtxt("/home/trunia1/data/VideoCountingDataset/QUVACount_Segments/localization/fast_video_segment_correct.txt")
+    masks_correct = np.loadtxt("/home/tomrunia/data/VideoCountingDataset/QUVACount_Segments/localization/fast_video_segment_correct.txt")
     masks_correct = masks_correct.astype(np.bool)
 
     # Frames in current block and segmentation masks for this block

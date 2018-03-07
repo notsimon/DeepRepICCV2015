@@ -122,15 +122,15 @@ if __name__ == "__main__":
     localization_method = 'simple'
     segmentation_path = None
 
-    #segmentation_path = "/home/trunia1/data/VideoCountingDataset/QUVACount_Segments/localization/FastVideoSegment/"
+    #segmentation_path = "/home/tomrunia/data/VideoCountingDataset/QUVACount_Segments/localization/FastVideoSegment/"
 
     # Count the entire dataset
     cnt_true, cnt_pred = count_quvacount(dataset, localization_method, segmentation_path)
 
     # Count videos (accelerate subset)
-    #accelate_video_path = "/home/trunia1/data/VideoCountingDataset/QUVACount_Segments/videos_acceleration/accelerate_0.5/"
+    #accelate_video_path = "/home/tomrunia/data/VideoCountingDataset/QUVACount_Segments/videos_acceleration/accelerate_0.5/"
     #cnt_true, cnt_pred = count_quvacount_accelerate(dataset, accelate_video_path)
 
     # Save results
-    results_path = "/home/trunia1/experiments/2017/20170925_LevyWolf_FINAL/online/QUVACount_Segments/{}/".format(localization_method)
-    cortex.count.write_experiment(cnt_pred, dataset, results_path)
+    results_path = "/home/tomrunia/experiments/2017/20170925_LevyWolf_FINAL/online/QUVACount_Segments/{}/".format(localization_method)
+    #cortex.count.write_experiment(cnt_pred, dataset, results_path)
