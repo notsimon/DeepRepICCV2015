@@ -9,8 +9,9 @@ from bench_classify_online import load_and_count_video
 import count_dataset
 import cortex.count
 
+
 def count_quvacount(dataset, localization_method, segmentation_path):
-    '''
+    """
 
     Count entire QUVACount dataset using the online method.
     When using the fullsystem this should return approximately these results (20170925):
@@ -25,12 +26,17 @@ def count_quvacount(dataset, localization_method, segmentation_path):
 
     :param dataset_path:
     :return:
-    '''
+    """
 
     # Prepare the CNN in Theano
-    test_set_x, test_set_y, shared_test_set_y, valid_ds, classify, batchsize = \
-        prepare_network()
-
+    (
+        test_set_x,
+        test_set_y,
+        shared_test_set_y,
+        valid_ds,
+        classify,
+        batchsize,
+    ) = prepare_network()
 
     # Initialize structure for storing results
     cnt_pred = np.zeros(dataset.num_examples, np.float32)
@@ -41,17 +47,26 @@ def count_quvacount(dataset, localization_method, segmentation_path):
 
         # Actual counting of the video
         cnt_pred[example.index] = load_and_count_video(
-            example.video_path, classify, test_set_x, batchsize,
-            localization_method, segmentation_path)
+            example.video_path,
+            classify,
+            test_set_x,
+            batchsize,
+            localization_method,
+            segmentation_path,
+        )
 
         cnt_true[example.index] = example.rep_count
-        print("Video {}. True Count = {}, Predict Count = {}"
-              .format(example.name, example.rep_count, cnt_pred[example.index]))
+        print(
+            "Video {}. True Count = {}, Predict Count = {}".format(
+                example.name, example.rep_count, cnt_pred[example.index]
+            )
+        )
 
     return cnt_true, cnt_pred
 
+
 def count_quvacount_accelerate(dataset_path, vid_accelate_path):
-    '''
+    """
 
     Same as above but on a subset of videos in which the last half is accelerated
 
@@ -78,12 +93,17 @@ def count_quvacount_accelerate(dataset_path, vid_accelate_path):
     :param dataset_path:
     :param vid_accelate_path:
     :return:
-    '''
+    """
 
     # Prepare the CNN in Theano
-    test_set_x, test_set_y, shared_test_set_y, valid_ds, classify, batchsize = \
-        prepare_network()
-
+    (
+        test_set_x,
+        test_set_y,
+        shared_test_set_y,
+        valid_ds,
+        classify,
+        batchsize,
+    ) = prepare_network()
 
     dataset = QUVACountDataset(dataset_path)
 
@@ -101,12 +121,18 @@ def count_quvacount_accelerate(dataset_path, vid_accelate_path):
             continue
 
         # Actual counting of the video
-        cnt_pred_curr = load_and_count_video(vid_accelerate, classify, test_set_x, batchsize)[0]
+        cnt_pred_curr = load_and_count_video(
+            vid_accelerate, classify, test_set_x, batchsize
+        )[0]
 
         cnt_pred.append(cnt_pred_curr)
         cnt_true.append(example.rep_count)
 
-        print("  True Count = {}, Predict Count = {}".format(example.rep_count, cnt_pred[-1]))
+        print(
+            "  True Count = {}, Predict Count = {}".format(
+                example.rep_count, cnt_pred[-1]
+            )
+        )
 
     cnt_pred = np.asarray(cnt_pred, np.int32)
     cnt_true = np.asarray(cnt_true, np.int32)
@@ -119,18 +145,22 @@ if __name__ == "__main__":
     # Count videos (main experiment)
     dataset = count_dataset.init_quva_dataset(speed=1.0)
 
-    localization_method = 'simple'
+    localization_method = "simple"
     segmentation_path = None
 
-    #segmentation_path = "/home/tomrunia/data/VideoCountingDataset/QUVACount_Segments/localization/FastVideoSegment/"
+    # segmentation_path = "/home/tomrunia/data/VideoCountingDataset/QUVACount_Segments/localization/FastVideoSegment/"
 
     # Count the entire dataset
-    cnt_true, cnt_pred = count_quvacount(dataset, localization_method, segmentation_path)
+    cnt_true, cnt_pred = count_quvacount(
+        dataset, localization_method, segmentation_path
+    )
 
     # Count videos (accelerate subset)
-    #accelate_video_path = "/home/tomrunia/data/VideoCountingDataset/QUVACount_Segments/videos_acceleration/accelerate_0.5/"
-    #cnt_true, cnt_pred = count_quvacount_accelerate(dataset, accelate_video_path)
+    # accelate_video_path = "/home/tomrunia/data/VideoCountingDataset/QUVACount_Segments/videos_acceleration/accelerate_0.5/"
+    # cnt_true, cnt_pred = count_quvacount_accelerate(dataset, accelate_video_path)
 
     # Save results
-    results_path = "/home/tomrunia/experiments/2017/20170925_LevyWolf_FINAL/online/QUVACount_Segments/{}/".format(localization_method)
-    #cortex.count.write_experiment(cnt_pred, dataset, results_path)
+    results_path = "/home/tomrunia/experiments/2017/20170925_LevyWolf_FINAL/online/QUVACount_Segments/{}/".format(
+        localization_method
+    )
+    # cortex.count.write_experiment(cnt_pred, dataset, results_path)
