@@ -56,11 +56,11 @@ def count_quvacount(dataset, localization_method, segmentation_path):
         )
 
         cnt_true[example.index] = example.rep_count
-        print(
+        print((
             "Video {}. True Count = {}, Predict Count = {}".format(
                 example.name, example.rep_count, cnt_pred[example.index]
             )
-        )
+        ))
 
     return cnt_true, cnt_pred
 
@@ -128,11 +128,11 @@ def count_quvacount_accelerate(dataset_path, vid_accelate_path):
         cnt_pred.append(cnt_pred_curr)
         cnt_true.append(example.rep_count)
 
-        print(
+        print((
             "  True Count = {}, Predict Count = {}".format(
                 example.rep_count, cnt_pred[-1]
             )
-        )
+        ))
 
     cnt_pred = np.asarray(cnt_pred, np.int32)
     cnt_true = np.asarray(cnt_true, np.int32)

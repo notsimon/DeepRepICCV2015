@@ -3,7 +3,7 @@ live repetition counting system
 Ofir Levy, Lior Wolf
 Tel Aviv University   
 """
-import cPickle
+import pickle
 import numpy
 import cv2
 from scipy.ndimage import filters
@@ -212,7 +212,7 @@ class RepDetector:
                     actions_counter -= 1
                     global_counter = 0
                     cur_state = state.NO_REP
-                    print "fast recovery applied !!"
+                    print("fast recovery applied !!")
                 else:
                     # rewind redundant count mechanism
                     # find how many frames pass since we have low entropy
@@ -227,7 +227,7 @@ class RepDetector:
                     reversed_cnt = self.count_array[::-1]
                     frames_pass = min(frames_pass, reversed_cnt.shape[0] - 1)
                     new_counter = reversed_cnt[frames_pass]
-                    print "couting rewinded by %i" % (global_counter - new_counter)
+                    print("couting rewinded by %i" % (global_counter - new_counter))
                     global_counter = new_counter
                     # stop counting, move to cooldown
                     cur_state = state.COOLDOWN
@@ -240,8 +240,9 @@ class RepDetector:
                 cur_state = state.NO_REP
 
 
-def draw_str(dst, (x, y), s, color, scale):
+def draw_str(dst, xxx_todo_changeme, s, color, scale):
 
+    (x, y) = xxx_todo_changeme
     if color[0] + color[1] + color[2] == 255 * 3:
         cv2.putText(
             dst,
@@ -302,7 +303,7 @@ if __name__ == "__main__":
     train_set = (data_x, data_y)
     test_set_x, test_set_y, shared_test_set_y = shared_dataset(train_set)
 
-    print "building ... "
+    print("building ... ")
     batch_size = 1
 
     # allocate symbolic variables for the data
@@ -389,11 +390,11 @@ if __name__ == "__main__":
     )
 
     # load weights
-    print "loading weights state"
+    print("loading weights state")
     f = file("weights.save", "rb")
     loaded_objects = []
     for i in range(5):
-        loaded_objects.append(cPickle.load(f))
+        loaded_objects.append(pickle.load(f))
     f.close()
     layer0.__setstate__(loaded_objects[0])
     layer1.__setstate__(loaded_objects[1])
@@ -437,7 +438,7 @@ if __name__ == "__main__":
 
             ret, frame = cap.read()
             if ret == 0:
-                print ("vid" + str(vidNum) + " done")
+                print(("vid" + str(vidNum) + " done"))
                 break
 
             frame = scipy.misc.imresize(frame, size=(480, 640), interp="bilinear")
@@ -510,8 +511,8 @@ if __name__ == "__main__":
 
         # done counting all videos
         # produce stats
-    print "done. count map:"
-    print countMap
+    print("done. count map:")
+    print(countMap)
     gt_counts = numpy.array(
         [
             10,
@@ -544,8 +545,8 @@ if __name__ == "__main__":
     xx = numpy.sum(countMap, axis=1)
     numpy.abs(gt_counts - xx)
     dif = numpy.abs(gt_counts - xx)
-    print ("number of vids that count diff = 0 =  % i" % (numpy.sum(dif < 1)))
-    print ("number of vids that count diff <= 1 =  % i" % (numpy.sum(dif < 2)))
-    print ("number of vids that count diff <= 2 =  % i" % (numpy.sum(dif < 3)))
-    print ("number of vids that count diff <= 3 =  % i" % (numpy.sum(dif < 4)))
+    print(("number of vids that count diff = 0 =  % i" % (numpy.sum(dif < 1))))
+    print(("number of vids that count diff <= 1 =  % i" % (numpy.sum(dif < 2))))
+    print(("number of vids that count diff <= 2 =  % i" % (numpy.sum(dif < 3))))
+    print(("number of vids that count diff <= 3 =  % i" % (numpy.sum(dif < 4))))
     print ("done")

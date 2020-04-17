@@ -30,7 +30,7 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
 
         for nTestSet in range(tests_num):
 
-            print "stride: %i, vid: %i" % (nStride, nTestSet)
+            print("stride: %i, vid: %i" % (nStride, nTestSet))
             fileName = vid_root + "YT_seg_" + str(nTestSet) + ".avi"
             mydatasets = load_next_test_data_simple_roi(fileName, nStride)
 
@@ -41,7 +41,7 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
             test_set_x.set_value(ns_test_set_x, borrow=True)
             n_samples = ns_test_set_x.shape[0]
 
-            out_list = [classify(i) for i in xrange(n_samples)]
+            out_list = [classify(i) for i in range(n_samples)]
 
             frame_counter = 0
             rep_counter = 0
@@ -81,12 +81,12 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
     min_err_cnt_o = absdiff_o.min(axis=1)
     min_err_perc_o = min_err_cnt_o / gt[:, 1]
     err_perc_o = numpy.average(min_err_perc_o) * 100
-    print "alpha = 1: precentage error:    %.2f%%" % (err_perc_o)
+    print("alpha = 1: precentage error:    %.2f%%" % (err_perc_o))
 
-    print "---------"
+    print("---------")
     med = numpy.median(countArr, axis=1)
     medif = numpy.average(abs(med - gt1) / gt1) * 100
-    print "median stride: precentage error:    %.2f%%" % medif
+    print("median stride: precentage error:    %.2f%%" % medif)
 
     xx = entropy / num_entropy
     chosen_stride = numpy.nanargmin(xx, axis=1)
@@ -96,6 +96,6 @@ def test_benchmark_offline(classify, test_set_x, batch_size):
     ent_chosen_cnt = flt[m]
 
     entdif = numpy.average(abs(ent_chosen_cnt - gt1) / gt1) * 100
-    print "enropy stride: precentage error:    %.2f%%" % entdif
+    print("enropy stride: precentage error:    %.2f%%" % entdif)
 
-    print "offline entropy counting done"
+    print("offline entropy counting done")

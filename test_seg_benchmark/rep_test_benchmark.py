@@ -1,4 +1,4 @@
-import cPickle
+import pickle
 import os
 import sys
 import time
@@ -110,7 +110,7 @@ def prepare_network():
     f = open(weightFile, "rb")
     loaded_objects = []
     for i in range(5):
-        loaded_objects.append(cPickle.load(f))
+        loaded_objects.append(pickle.load(f))
     f.close()
     layer0.__setstate__(loaded_objects[0])
     layer1.__setstate__(loaded_objects[1])

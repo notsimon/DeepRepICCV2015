@@ -357,14 +357,14 @@ def test_benchmark_online(classify, test_set_x, batch_size):
         )
         predict[nTestSet] = global_count
 
-        print("  True Count = {}".format(gt1[nTestSet]))
-        print("  Pred Count = {}".format(predict[nTestSet]))
-        print("#" * 60)
+        print(("  True Count = {}".format(gt1[nTestSet])))
+        print(("  Pred Count = {}".format(predict[nTestSet])))
+        print(("#" * 60))
 
     output_dir = "/home/tomrunia/experiments/2017/20170925_LevyWolf_FINAL/online/LevyWolf_Acceleration/{}/".format(
         localization_method
     )
 
-    print("#" * 60)
+    print(("#" * 60))
     gt1 = gt1.astype(numpy.int32)
     # cortex.count.write_experiment(predict, gt1, output_dir)

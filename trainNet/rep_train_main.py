@@ -3,7 +3,7 @@ live repetition counting system
 Ofir Levy, Lior Wolf
 Tel Aviv University
 """
-import cPickle
+import pickle
 import gzip
 import os
 import sys
@@ -82,7 +82,7 @@ def train_rep(
 
     weights_dir = "./weights/"
 
-    print "... load input data"
+    print("... load input data")
     filename = train_dir + "rep_train_data_1.gzip.h5"
     datasets = load_initial_data(filename)
     train_set_x, train_set_y, shared_train_set_y = datasets
@@ -121,7 +121,7 @@ def train_rep(
     ######################
     # BUILD ACTUAL MODEL #
     ######################
-    print "... building the model"
+    print("... building the model")
 
     # image sizes
     batchsize = batch_size
@@ -237,7 +237,7 @@ def train_rep(
     ###############
     # TRAIN MODEL #
     ###############
-    print "... training"
+    print("... training")
 
     start_time = time.clock()
 
@@ -250,13 +250,13 @@ def train_rep(
     startc = time.clock()
     while (epoch < n_epochs) and (not done_looping):
         endc = time.clock()
-        print ("epoch %i, took %.2f minutes" % (epoch, (endc - startc) / 60.0))
+        print(("epoch %i, took %.2f minutes" % (epoch, (endc - startc) / 60.0)))
         startc = time.clock()
         epoch = epoch + 1
-        for nTrainSet in xrange(1, train_files_num + 1):
+        for nTrainSet in range(1, train_files_num + 1):
             # load next train data
             if nTrainSet % 50 == 0:
-                print "training @ nTrainSet =  ", nTrainSet, ", cost = ", cost_ij
+                print("training @ nTrainSet =  ", nTrainSet, ", cost = ", cost_ij)
             filename = train_dir + "rep_train_data_" + str(nTrainSet) + ".gzip.h5"
             datasets = load_next_data(filename)
             ns_train_set_x, ns_train_set_y = datasets
@@ -268,7 +268,7 @@ def train_rep(
             n_train_batches /= batch_size
 
             # train
-            for minibatch_index in xrange(n_train_batches):
+            for minibatch_index in range(n_train_batches):
 
                 # training itself
                 # --------------------------------------
@@ -277,7 +277,7 @@ def train_rep(
 
         # at the end of each epoch run validation
         this_validation_loss = 0
-        for nValSet in xrange(1, val_files_num + 1):
+        for nValSet in range(1, val_files_num + 1):
             filename = valid_dir + "rep_valid_data_" + str(nValSet) + ".gzip.h5"
             datasets = load_next_data(filename)
             ns_valid_set_x, ns_valid_set_y = datasets
@@ -289,10 +289,10 @@ def train_rep(
             n_valid_batches /= batch_size
 
             # compute zero-one loss on validation set
-            validation_losses = [validate_model(i) for i in xrange(n_valid_batches)]
+            validation_losses = [validate_model(i) for i in range(n_valid_batches)]
             this_validation_loss += numpy.mean(validation_losses)
         this_validation_loss /= val_files_num
-        print (
+        print((
             "epoch %i, minibatch %i/%i, validation error %f %%"
             % (
                 epoch,
@@ -300,30 +300,30 @@ def train_rep(
                 n_train_batches,
                 this_validation_loss * 100.0,
             )
-        )
+        ))
 
         # save snapshots
-        print "saving weights state, epoch = ", epoch
+        print("saving weights state, epoch = ", epoch)
         f = file(weights_dir + "weights_epoch" + str(epoch) + ".save", "wb")
         state_L0 = layer0.__getstate__()
-        cPickle.dump(state_L0, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(state_L0, f, protocol=pickle.HIGHEST_PROTOCOL)
         state_L1 = layer1.__getstate__()
-        cPickle.dump(state_L1, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(state_L1, f, protocol=pickle.HIGHEST_PROTOCOL)
         state_L2 = layer2.__getstate__()
-        cPickle.dump(state_L2, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(state_L2, f, protocol=pickle.HIGHEST_PROTOCOL)
         state_L3 = layer3.__getstate__()
-        cPickle.dump(state_L3, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(state_L3, f, protocol=pickle.HIGHEST_PROTOCOL)
         state_L4 = layer4.__getstate__()
-        cPickle.dump(state_L4, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(state_L4, f, protocol=pickle.HIGHEST_PROTOCOL)
         f.close()
 
     end_time = time.clock()
     print ("Optimization complete.")
-    print >> sys.stderr, (
+    print((
         "The code for file "
         + os.path.split(__file__)[1]
         + " ran for %.2fm" % ((end_time - start_time) / 60.0)
-    )
+    ), file=sys.stderr)
 
 
 if __name__ == "__main__":

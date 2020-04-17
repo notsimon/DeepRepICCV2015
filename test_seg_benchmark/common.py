@@ -240,11 +240,11 @@ def load_next_test_data_segmentation(fileName, segmentation_path, stride):
                 vid_index = int(vid_name[0:3])
                 if not masks_correct[vid_index]:
                     if index == 0:
-                        print(
+                        print((
                             "segmentation mask NOT correct for video {}: {}".format(
                                 vid_index, vid_name
                             )
-                        )
+                        ))
                     box_to_add = 0, 0, frame.shape[1], frame.shape[0]
 
             curr_boxes.append(box_to_add)
@@ -273,8 +273,8 @@ def load_next_test_data_segmentation(fileName, segmentation_path, stride):
 
                 # Show the frames + boxes for debugging purpose
                 if debug:
-                    print(block_frames.shape)
-                    print(block_boxes.shape, box.shape)
+                    print((block_frames.shape))
+                    print((block_boxes.shape, box.shape))
                     for show_idx in range(20):
                         frame_draw = block_frames[show_idx].copy()
                         frame_draw = cv2.cvtColor(frame_draw, cv2.COLOR_GRAY2BGR)

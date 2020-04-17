@@ -3,7 +3,7 @@ live repetition counting system
 Ofir Levy, Lior Wolf
 Tel Aviv University
 """
-import cPickle
+import pickle
 import gzip
 import os
 import sys
@@ -53,7 +53,7 @@ mat_files = cortex.utils.find_files(in_dir, "mat")
 
 for mat_file in mat_files:
 
-    print("Processing file: {}".format(mat_file))
+    print(("Processing file: {}".format(mat_file)))
     frames, labels = load_rep_dataset(mat_file)
     filename = cortex.utils.basename(mat_file)
     out_file = os.path.join(out_dir, filename + ".h5")

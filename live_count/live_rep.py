@@ -3,7 +3,7 @@ live repetition counting system
 Ofir Levy, Lior Wolf
 Tel Aviv University
 """
-import cPickle
+import pickle
 import time
 import numpy
 import cv2
@@ -222,7 +222,7 @@ class RepDetector:
                     actions_counter -= 1
                     global_counter = 0
                     cur_state = state.NO_REP
-                    print "fast recovery applied !!"
+                    print("fast recovery applied !!")
                 else:
                     # rewind redandunt count mechanism
                     # find how many frames pass since we have low entropy
@@ -237,7 +237,7 @@ class RepDetector:
                     reversed_cnt = self.count_array[::-1]
                     frames_pass = min(frames_pass, reversed_cnt.shape[0] - 1)
                     new_counter = reversed_cnt[frames_pass]
-                    print "couting rewinded by %i" % (global_counter - new_counter)
+                    print("couting rewinded by %i" % (global_counter - new_counter))
                     global_counter = new_counter
                     # stop counting, move to cooldown
                     cur_state = state.COOLDOWN
@@ -250,8 +250,9 @@ class RepDetector:
                 cur_state = state.NO_REP
 
 
-def draw_str(dst, (x, y), s, color, scale):
+def draw_str(dst, xxx_todo_changeme, s, color, scale):
 
+    (x, y) = xxx_todo_changeme
     if color[0] + color[1] + color[2] == 255 * 3:
         cv2.putText(
             dst,
@@ -314,7 +315,7 @@ if __name__ == "__main__":
     train_set = (data_x, data_y)
     test_set_x, test_set_y, shared_test_set_y = shared_dataset(train_set)
 
-    print "building ... "
+    print("building ... ")
     batch_size = 1
 
     # allocate symbolic variables for the data
@@ -399,11 +400,11 @@ if __name__ == "__main__":
     )
 
     # load weights
-    print "loading weights state"
+    print("loading weights state")
     f = file("weights.save", "rb")
     loaded_objects = []
     for i in range(5):
-        loaded_objects.append(cPickle.load(f))
+        loaded_objects.append(pickle.load(f))
     f.close()
     layer0.__setstate__(loaded_objects[0])
     layer1.__setstate__(loaded_objects[1])
@@ -418,7 +419,7 @@ if __name__ == "__main__":
     try:
         opts, args = getopt.getopt(sys.argv[1:], "i:h:", ["ifile=", "help="])
     except getopt.GetoptError:
-        print "invalid arguments. for input from camera, add -i <inputfile> for input from file"
+        print("invalid arguments. for input from camera, add -i <inputfile> for input from file")
         sys.exit(2)
     for opt, arg in opts:
         if opt in ("-i", "--ifile"):
@@ -426,10 +427,10 @@ if __name__ == "__main__":
             fromCam = False
 
     if fromCam:
-        print "using camera input"
+        print("using camera input")
         cap = cv2.VideoCapture(0)
     else:
-        print "using input file: ", inputfile
+        print("using input file: ", inputfile)
         cap = cv2.VideoCapture(inputfile)
 
         # my timing
@@ -459,7 +460,7 @@ if __name__ == "__main__":
 
         ret, frame = cap.read()
         if ret == 0:
-            print "unable to read frame"
+            print("unable to read frame")
             break
         proFrame = process_single_frame(frame)
 
