@@ -437,7 +437,7 @@ if __name__ == "__main__":
     frame_rate = 30
     frame_interval_ms = 1000 / frame_rate
 
-    fourcc = cv2.cv.CV_FOURCC(*"XVID")
+    fourcc = cv2.VideoWriter_fourcc(*"XVID")
     video_writer = cv2.VideoWriter(
         "../out/live_out.avi", fourcc, frame_rate, (640, 480)
     )
