@@ -13,6 +13,7 @@ import scipy
 import theano.tensor as T
 import sys, getopt
 from layers import LogisticRegression, HiddenLayer, LeNetConvPoolLayer
+from math import floor
 
 
 class state:
@@ -100,7 +101,7 @@ class RepDetector:
 
             ll = si.shape[0]
             th1 = round(ll * 0.02)
-            th2 = numpy.floor(ll * 0.98)
+            th2 = floor(ll * 0.98)
             y1 = si[th1]
             y2 = si[th2]
             x1 = sj[th1]
@@ -157,7 +158,7 @@ class RepDetector:
         med_out_label = med_out_label.astype("int32")
 
         if initial:
-            self.rep_count = 20 / (med_out_label)
+            self.rep_count = 20 // (med_out_label)
             self.frame_residue = 20 % (med_out_label)
         else:
             self.frame_residue += 1
@@ -206,7 +207,7 @@ class RepDetector:
                 cur_state = state.IN_REP
                 global_counter = self.rep_count
                 winner_stride = self.stride_number
-                in_time = in_frame_num / 60
+                in_time = in_frame_num // 60
         if (cur_state == state.IN_REP) and (winner_stride == self.stride_number):
             lastSixSorted = numpy.sort(self.ent_arr[history_num - 8 : history_num])
             # keep counting while entropy is low enough
@@ -216,7 +217,7 @@ class RepDetector:
                 # continue counting
                 global_counter = self.rep_count
             else:
-                out_time = in_frame_num / 60
+                out_time = in_frame_num // 60
                 if ((out_time - in_time) < 4) or (self.rep_count < 5):
                     # fast recovery mechnism, start over
                     actions_counter -= 1
@@ -242,9 +243,9 @@ class RepDetector:
                     # stop counting, move to cooldown
                     cur_state = state.COOLDOWN
                     # init cooldown counter
-                    cooldown_in_time = in_frame_num / 60
+                    cooldown_in_time = in_frame_num // 60
         if cur_state == state.COOLDOWN:
-            cooldown_out_time = in_frame_num / 60
+            cooldown_out_time = in_frame_num // 60
             if (cooldown_out_time - cooldown_in_time) > 4:
                 global_counter = 0
                 cur_state = state.NO_REP
@@ -326,12 +327,12 @@ if __name__ == "__main__":
     # image size
     layer0_w = 50
     layer0_h = 50
-    layer1_w = (layer0_w - 4) / 2
-    layer1_h = (layer0_h - 4) / 2
-    layer2_w = (layer1_w - 2) / 2
-    layer2_h = (layer1_h - 2) / 2
-    layer3_w = (layer2_w - 2) / 2
-    layer3_h = (layer2_h - 2) / 2
+    layer1_w = (layer0_w - 4) // 2
+    layer1_h = (layer0_h - 4) // 2
+    layer2_w = (layer1_w - 2) // 2
+    layer2_h = (layer1_h - 2) // 2
+    layer3_w = (layer2_w - 2) // 2
+    layer3_h = (layer2_h - 2) // 2
 
     ######################
     # BUILD ACTUAL MODEL #
@@ -401,10 +402,10 @@ if __name__ == "__main__":
 
     # load weights
     print("loading weights state")
-    f = file("weights.save", "rb")
+    f = open("weights.save", "rb")
     loaded_objects = []
     for i in range(5):
-        loaded_objects.append(pickle.load(f))
+        loaded_objects.append(pickle.load(f, encoding='bytes'))
     f.close()
     layer0.__setstate__(loaded_objects[0])
     layer1.__setstate__(loaded_objects[1])
@@ -435,7 +436,7 @@ if __name__ == "__main__":
 
         # my timing
     frame_rate = 30
-    frame_interval_ms = 1000 / frame_rate
+    frame_interval_ms = 1000 // frame_rate
 
     fourcc = cv2.VideoWriter_fourcc(*"XVID")
     video_writer = cv2.VideoWriter(
@@ -480,7 +481,7 @@ if __name__ == "__main__":
         red_color = (0, 0, 130)
         orange_color = (0, 140, 255)
 
-        out_time = in_frame_num / 60
+        out_time = in_frame_num // 60
         if (cur_state == state.IN_REP) and (
             ((out_time - in_time) < 4) or (global_counter < 5)
         ):
